@@ -20,14 +20,15 @@ namespace SteamWebPipes
             {
                 socket.OnOpen = () =>
                 {
-                    Log("Open! {0}", socket.ConnectionInfo.ClientIpAddress);
                     ConnectedClients.Add(socket);
-                    socket.Send("hello world");
+
+                    Log("Client #{2} connected: {0}:{1}", socket.ConnectionInfo.ClientIpAddress, socket.ConnectionInfo.ClientPort, ConnectedClients.Count);
                 };
                 socket.OnClose = () =>
                 {
-                    Log("Close! {0}", socket.ConnectionInfo.ClientIpAddress);
                     ConnectedClients.Remove(socket);
+
+                    Log("Client #{2} disconnected: {0}:{1}", socket.ConnectionInfo.ClientIpAddress, socket.ConnectionInfo.ClientPort, ConnectedClients.Count);
                 };
             });
 
@@ -40,7 +41,7 @@ namespace SteamWebPipes
 
         public static void Broadcast(string message)
         {
-            foreach (var socket in ConnectedClients.ToList())
+            foreach (var socket in ConnectedClients)
             {
                 socket.Send(message);
             }
