@@ -1,0 +1,10 @@
+﻿using System.Reflection;
+[assembly: AssemblyTitle("SteamWebPipes")]
+[assembly: AssemblyProduct("SteamWebPipes")]
+[assembly: AssemblyDescription("Pushes Steam changelists to websockets clients")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("Steam Database")]
+[assembly: AssemblyCopyright("Steam Database")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+[assembly: AssemblyVersion("1.0.0.*")]
