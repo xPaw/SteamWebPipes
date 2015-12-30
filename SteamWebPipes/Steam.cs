@@ -52,9 +52,12 @@ namespace SteamWebPipes
 
             Bootstrap.Log("Changelist {0} -> {1} ({2} apps, {3} packages)", PreviousChangeNumber, callback.CurrentChangeNumber, appChangesCount, packageChangesCount);
 
+            if (PreviousChangeNumber > 0)
+            {
+                Bootstrap.Broadcast(JsonConvert.SerializeObject(new ChangelistEvent(callback)));
+            }
+
             PreviousChangeNumber = callback.CurrentChangeNumber;
-            
-            Bootstrap.Broadcast(JsonConvert.SerializeObject(callback));
         }
 
         private void OnConnected(SteamClient.ConnectedCallback callback)
