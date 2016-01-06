@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Fleck;
+using Newtonsoft.Json;
 
 namespace SteamWebPipes
 {
@@ -39,7 +40,12 @@ namespace SteamWebPipes
             Console.ReadLine();
         }
 
-        public static void Broadcast(string message)
+        public static void Broadcast(AbstractEvent ev)
+        {
+            Broadcast(JsonConvert.SerializeObject(ev));
+        }
+
+        private static void Broadcast(string message)
         {
             foreach (var socket in ConnectedClients)
             {

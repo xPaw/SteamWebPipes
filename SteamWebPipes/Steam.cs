@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using Newtonsoft.Json;
 using SteamKit2;
 
 namespace SteamWebPipes
@@ -13,6 +12,7 @@ namespace SteamWebPipes
         private readonly SteamApps Apps;
         private uint PreviousChangeNumber;
         private bool IsRunning = true;
+        private bool IsLoggedOn = false;
 
         public Steam()
         {
@@ -36,7 +36,10 @@ namespace SteamWebPipes
             {
                 CallbackManager.RunWaitCallbacks(TimeSpan.FromSeconds(5));
 
-                Apps.PICSGetChangesSince(PreviousChangeNumber, true, true);
+                if (IsLoggedOn)
+                {
+                    Apps.PICSGetChangesSince(PreviousChangeNumber, true, true);
+                }
             }
         }
 
@@ -54,7 +57,7 @@ namespace SteamWebPipes
 
             if (PreviousChangeNumber > 0)
             {
-                Bootstrap.Broadcast(JsonConvert.SerializeObject(new ChangelistEvent(callback)));
+                Bootstrap.Broadcast(new ChangelistEvent(callback));
             }
 
             PreviousChangeNumber = callback.CurrentChangeNumber;
@@ -85,6 +88,13 @@ namespace SteamWebPipes
                 return;
             }
 
+            if (IsLoggedOn)
+            {
+                Bootstrap.Broadcast(new GenericEvent("LogOff"));
+
+                IsLoggedOn = false;
+            }
+
             Bootstrap.Log("Disconnected from Steam. Retrying...");
 
             Thread.Sleep(TimeSpan.FromSeconds(15));
@@ -103,11 +113,22 @@ namespace SteamWebPipes
                 return;
             }
 
-            Bootstrap.Log("Logged in, current valve time is {0} UTC", callback.ServerTime.ToString());
+            IsLoggedOn = true;
+
+            Bootstrap.Broadcast(new GenericEvent("LogOn"));
+
+            Bootstrap.Log("Logged in, current valve time is {0} UTC", callback.ServerTime);
         }
 
         private void OnLoggedOff(SteamUser.LoggedOffCallback callback)
         {
+            if (IsLoggedOn)
+            {
+                Bootstrap.Broadcast(new GenericEvent("LogOff"));
+
+                IsLoggedOn = false;
+            }
+
             Bootstrap.Log("Logged off from Steam");
         }
     }

@@ -5,12 +5,8 @@ using SteamKit2;
 
 namespace SteamWebPipes
 {
-    [JsonObject(MemberSerialization.OptIn)]
-    internal class ChangelistEvent
+    internal class ChangelistEvent : AbstractEvent
     {
-        [JsonProperty]
-        public readonly string Type = "Changelist";
-
         [JsonProperty]
         public readonly uint ChangeNumber;
 
@@ -21,6 +17,7 @@ namespace SteamWebPipes
         public readonly List<uint> Packages;
 
         public ChangelistEvent(SteamApps.PICSChangesCallback callback)
+            : base("Changelist")
         {
             ChangeNumber = callback.CurrentChangeNumber;
 
