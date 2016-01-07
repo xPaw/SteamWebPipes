@@ -11,10 +11,20 @@ namespace SteamWebPipes
     internal static class Bootstrap
     {
         private static List<IWebSocketConnection> ConnectedClients = new List<IWebSocketConnection>();
+        public static string DatabaseConnectionString;
 
         private static void Main(string[] args)
         {
-            FleckLog.Level = LogLevel.Debug;
+            if (File.Exists("database.txt"))
+            {
+                Log("Using database connection string");
+
+                DatabaseConnectionString = File.ReadAllText("database.txt").Trim();
+            }
+            else
+            {
+                Log("database.txt does not exist, will not try to use database");
+            }
 
             var useCert = File.Exists("cert.pfx");
 

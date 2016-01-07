@@ -50,6 +50,10 @@
     <Reference Include="SteamKit2, Version=1.7.0.33680, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\SteamKit2.1.7.0\lib\net45\SteamKit2.dll</HintPath>
     </Reference>
+    <Reference Include="MySql.Data">
+      <HintPath>..\packages\MySql.Data.6.9.8\lib\net45\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bootstrap.cs" />
