@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Fleck;
 using Newtonsoft.Json;
@@ -15,8 +16,17 @@ namespace SteamWebPipes
         {
             FleckLog.Level = LogLevel.Debug;
 
-            var server = new WebSocketServer("ws://0.0.0.0:8181");
+            var useCert = File.Exists("cert.pfx");
+
+            var server = new WebSocketServer("ws" + (useCert ? "s" : "") + "://0.0.0.0:8181");
             server.SupportedSubProtocols = new[] { "steam-pics" };
+
+            if (useCert)
+            {
+                Log("Using certificate");
+                server.Certificate = new X509Certificate2("cert.pfx");
+            }
+
             server.Start(socket =>
             {
                 socket.OnOpen = () =>
@@ -27,9 +37,9 @@ namespace SteamWebPipes
                 };
                 socket.OnClose = () =>
                 {
-                    ConnectedClients.Remove(socket);
-
                     Log("Client #{2} disconnected: {0}:{1}", socket.ConnectionInfo.ClientIpAddress, socket.ConnectionInfo.ClientPort, ConnectedClients.Count);
+
+                    ConnectedClients.Remove(socket);
                 };
             });
 
