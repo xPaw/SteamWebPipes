@@ -63,6 +63,7 @@
     <Compile Include="Events\ChangelistEvent.cs" />
     <Compile Include="Events\LogOffEvent.cs" />
     <Compile Include="Events\LogOnEvent.cs" />
+    <Compile Include="Events\UsersOnlineEvent.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
