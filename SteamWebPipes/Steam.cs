@@ -90,7 +90,7 @@ namespace SteamWebPipes
 
             if (IsLoggedOn)
             {
-                Bootstrap.Broadcast(new GenericEvent("LogOff"));
+                Bootstrap.Broadcast(new LogOffEvent());
 
                 IsLoggedOn = false;
             }
@@ -115,7 +115,7 @@ namespace SteamWebPipes
 
             IsLoggedOn = true;
 
-            Bootstrap.Broadcast(new GenericEvent("LogOn"));
+            Bootstrap.Broadcast(new LogOnEvent());
 
             Bootstrap.Log("Logged in, current valve time is {0} UTC", callback.ServerTime);
         }
@@ -124,7 +124,7 @@ namespace SteamWebPipes
         {
             if (IsLoggedOn)
             {
-                Bootstrap.Broadcast(new GenericEvent("LogOff"));
+                Bootstrap.Broadcast(new LogOffEvent());
 
                 IsLoggedOn = false;
             }
