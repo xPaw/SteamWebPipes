@@ -53,11 +53,14 @@ namespace SteamWebPipes
                 };
             });
 
-            var thread = new Thread(new Steam().Tick);
+            var steam = new Steam();
+            var thread = new Thread(steam.Tick);
             thread.Name = "Steam";
             thread.Start();
 
             Console.ReadLine();
+
+            steam.IsRunning = false;
         }
 
         public static void Broadcast(AbstractEvent ev)

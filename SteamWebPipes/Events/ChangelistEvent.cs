@@ -24,7 +24,7 @@ namespace SteamWebPipes
 
             if (callback.AppChanges.Any())
             {
-                Apps = callback.AppChanges.ToDictionary(x => x.Key, x => "Unknown App");
+                Apps = callback.AppChanges.ToDictionary(x => x.Key, x => "Unknown App " + x.Key);
 
                 try
                 {
@@ -58,7 +58,7 @@ namespace SteamWebPipes
 
             if (callback.PackageChanges.Any())
             {
-                Packages = callback.PackageChanges.ToDictionary(x => x.Key, x => "Unknown Package");
+                Packages = callback.PackageChanges.ToDictionary(x => x.Key, x => "Unknown Package " + x.Key);
 
                 try
                 {

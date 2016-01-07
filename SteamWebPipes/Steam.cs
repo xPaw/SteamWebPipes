@@ -11,8 +11,8 @@ namespace SteamWebPipes
         private readonly SteamUser User;
         private readonly SteamApps Apps;
         private uint PreviousChangeNumber;
-        private bool IsRunning = true;
         private bool IsLoggedOn = false;
+        public bool IsRunning = true;
 
         public Steam()
         {
