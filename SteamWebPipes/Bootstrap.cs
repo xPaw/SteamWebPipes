@@ -66,6 +66,7 @@ namespace SteamWebPipes
             var timer = new Timer();
             timer.Elapsed += TimerTick;
             timer.Interval = TimeSpan.FromSeconds(30).TotalMilliseconds;
+            timer.Start();
 
             Console.ReadLine();
 
