@@ -30,6 +30,15 @@ namespace SteamWebPipes
 
         public void Tick()
         {
+            var loadServersTask = SteamDirectory.Initialize(0);
+            loadServersTask.Wait();
+
+            if (loadServersTask.IsFaulted)
+            {
+                Console.WriteLine("Error loading server list from directory: {0}", loadServersTask.Exception.Message);
+                return;
+            }
+
             Client.Connect();
 
             while (IsRunning)
