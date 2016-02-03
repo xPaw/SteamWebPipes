@@ -112,8 +112,19 @@ namespace SteamWebPipes
 
         private static void Broadcast(string message)
         {
-            foreach (var socket in ConnectedClients)
+            for (int i = ConnectedClients.Count - 1; i >= 0; i--)
             {
+                var socket = ConnectedClients[i];
+
+                if (!socket.IsAvailable)
+                {
+                    Log("Removing dead client #{2}: {0}:{1}", socket.ConnectionInfo.ClientIpAddress, socket.ConnectionInfo.ClientPort, ConnectedClients.Count);
+
+                    ConnectedClients.RemoveAt(i);
+
+                    continue;
+                }
+
                 socket.Send(message);
             }
         }
