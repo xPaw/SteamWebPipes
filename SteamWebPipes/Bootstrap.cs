@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Timers;
@@ -59,6 +60,12 @@ namespace SteamWebPipes
             });
 
             var steam = new Steam();
+
+            if (File.Exists("last-changenumber.txt"))
+            {
+                steam.PreviousChangeNumber = uint.Parse(File.ReadAllText("last-changenumber.txt"));
+            }
+
             var thread = new Thread(steam.Tick);
             thread.Name = "Steam";
             thread.Start();
@@ -70,7 +77,18 @@ namespace SteamWebPipes
 
             Console.ReadLine();
 
+            File.WriteAllText("last-changenumber.txt", steam.PreviousChangeNumber.ToString());
+
             steam.IsRunning = false;
+            thread.Abort();
+            timer.Stop();
+
+            foreach (var socket in ConnectedClients.ToList())
+            {
+                socket.Close();
+            }
+
+            server.Dispose();
         }
 
         private static void TimerTick(object sender, ElapsedEventArgs e)
