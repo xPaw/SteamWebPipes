@@ -17,8 +17,10 @@ namespace SteamWebPipes
         private static List<IWebSocketConnection> ConnectedClients = new List<IWebSocketConnection>();
         public static string DatabaseConnectionString;
 
-        private static void Main(string[] args)
+        private static void Main()
         {
+            Console.Title = "SteamWebPipes";
+
             if (File.Exists("database.txt"))
             {
                 Log("Using database connection string");
@@ -51,6 +53,7 @@ namespace SteamWebPipes
 
                     socket.Send(JsonConvert.SerializeObject(new UsersOnlineEvent(ConnectedClients.Count)));
                 };
+                    
                 socket.OnClose = () =>
                 {
                     Log("Client #{2} disconnected: {0}:{1}", socket.ConnectionInfo.ClientIpAddress, socket.ConnectionInfo.ClientPort, ConnectedClients.Count);
@@ -75,7 +78,8 @@ namespace SteamWebPipes
             timer.Interval = TimeSpan.FromSeconds(30).TotalMilliseconds;
             timer.Start();
 
-            Console.CancelKeyPress += delegate {
+            Console.CancelKeyPress += delegate
+            {
                 Console.WriteLine("Ctrl + C detected, shutting down.");
                 File.WriteAllText("last-changenumber.txt", steam.PreviousChangeNumber.ToString());
 
@@ -83,7 +87,8 @@ namespace SteamWebPipes
                 thread.Abort();
                 timer.Stop();
 
-                foreach (var socket in ConnectedClients.ToList()) {
+                foreach (var socket in ConnectedClients.ToList())
+                {
                     socket.Close();
                 }
 
