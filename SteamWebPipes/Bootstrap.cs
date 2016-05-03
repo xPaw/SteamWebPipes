@@ -75,20 +75,20 @@ namespace SteamWebPipes
             timer.Interval = TimeSpan.FromSeconds(30).TotalMilliseconds;
             timer.Start();
 
-            Console.ReadLine();
+            Console.CancelKeyPress += delegate {
+                Console.WriteLine("Ctrl + C detected, shutting down.");
+                File.WriteAllText("last-changenumber.txt", steam.PreviousChangeNumber.ToString());
 
-            File.WriteAllText("last-changenumber.txt", steam.PreviousChangeNumber.ToString());
+                steam.IsRunning = false;
+                thread.Abort();
+                timer.Stop();
 
-            steam.IsRunning = false;
-            thread.Abort();
-            timer.Stop();
+                foreach (var socket in ConnectedClients.ToList()) {
+                    socket.Close();
+                }
 
-            foreach (var socket in ConnectedClients.ToList())
-            {
-                socket.Close();
-            }
-
-            server.Dispose();
+                server.Dispose();
+            };
         }
 
         private static void TimerTick(object sender, ElapsedEventArgs e)
