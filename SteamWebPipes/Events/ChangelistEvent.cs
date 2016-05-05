@@ -26,29 +26,32 @@ namespace SteamWebPipes
             {
                 Apps = callback.AppChanges.ToDictionary(x => x.Key, x => "Unknown App " + x.Key);
 
-                try
+                if (Bootstrap.DatabaseConnectionString != null)
                 {
-                    var apps = string.Join(",", callback.AppChanges.Keys);
-
-                    using (var reader = MySqlHelper.ExecuteReader(Bootstrap.DatabaseConnectionString, "SELECT `AppID`, `Name`, `LastKnownName` FROM `Apps` WHERE `AppID` IN(" + apps + ")"))
+                    try
                     {
-                        while (reader.Read())
+                        var apps = string.Join(",", callback.AppChanges.Keys);
+
+                        using (var reader = MySqlHelper.ExecuteReader(Bootstrap.DatabaseConnectionString, "SELECT `AppID`, `Name`, `LastKnownName` FROM `Apps` WHERE `AppID` IN(" + apps + ")"))
                         {
-                            var name = reader.GetString(1);
-                            var lastKnownName = reader.GetString(2);
-
-                            if (!string.IsNullOrEmpty(lastKnownName) && name != lastKnownName)
+                            while (reader.Read())
                             {
-                                name = string.Format("{0} ({1})", name, lastKnownName);
-                            }
+                                var name = reader.GetString(1);
+                                var lastKnownName = reader.GetString(2);
 
-                            Apps[reader.GetUInt32(0)] = name;
+                                if (!string.IsNullOrEmpty(lastKnownName) && name != lastKnownName)
+                                {
+                                    name = string.Format("{0} ({1})", name, lastKnownName);
+                                }
+
+                                Apps[reader.GetUInt32(0)] = name;
+                            }
                         }
                     }
-                }
-                catch (MySqlException e)
-                {
-                    Bootstrap.Log("{0}", e.Message);
+                    catch (MySqlException e)
+                    {
+                        Bootstrap.Log("{0}", e.Message);
+                    }
                 }
             }
             else
@@ -60,21 +63,24 @@ namespace SteamWebPipes
             {
                 Packages = callback.PackageChanges.ToDictionary(x => x.Key, x => "Unknown Package " + x.Key);
 
-                try
+                if (Bootstrap.DatabaseConnectionString != null)
                 {
-                    var subs = string.Join(",", callback.PackageChanges.Keys);
-
-                    using (var reader = MySqlHelper.ExecuteReader(Bootstrap.DatabaseConnectionString, "SELECT `SubID`, `LastKnownName` FROM `Subs` WHERE `SubID` IN(" + subs + ")"))
+                    try
                     {
-                        while (reader.Read())
+                        var subs = string.Join(",", callback.PackageChanges.Keys);
+
+                        using (var reader = MySqlHelper.ExecuteReader(Bootstrap.DatabaseConnectionString, "SELECT `SubID`, `LastKnownName` FROM `Subs` WHERE `SubID` IN(" + subs + ")"))
                         {
-                            Packages[reader.GetUInt32(0)] = reader.GetString(1);
+                            while (reader.Read())
+                            {
+                                Packages[reader.GetUInt32(0)] = reader.GetString(1);
+                            }
                         }
                     }
-                }
-                catch (MySqlException e)
-                {
-                    Bootstrap.Log("{0}", e.Message);
+                    catch (MySqlException e)
+                    {
+                        Bootstrap.Log("{0}", e.Message);
+                    }
                 }
             }
             else

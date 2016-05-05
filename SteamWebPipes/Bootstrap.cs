@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -21,26 +22,24 @@ namespace SteamWebPipes
         {
             Console.Title = "SteamWebPipes";
 
-            if (File.Exists("database.txt"))
-            {
-                Log("Using database connection string");
+            DatabaseConnectionString = ConfigurationManager.AppSettings["Database"];
 
-                DatabaseConnectionString = File.ReadAllText("database.txt").Trim();
-            }
-            else
+            if (string.IsNullOrWhiteSpace(Bootstrap.DatabaseConnectionString))
             {
-                Log("database.txt does not exist, will not try to use database");
+                Bootstrap.DatabaseConnectionString = null;
+
+                Log("Database connectiong string is empty, will not try to get app names");
             }
 
-            var useCert = File.Exists("cert.pfx");
+            var cert = ConfigurationManager.AppSettings["X509Certificate"];
 
-            var server = new WebSocketServer("ws" + (useCert ? "s" : "") + "://0.0.0.0:8181");
+            var server = new WebSocketServer(ConfigurationManager.AppSettings["Location"]);
             server.SupportedSubProtocols = new[] { "steam-pics" };
 
-            if (useCert)
+            if (File.Exists(cert))
             {
                 Log("Using certificate");
-                server.Certificate = new X509Certificate2("cert.pfx");
+                server.Certificate = new X509Certificate2(cert);
             }
 
             server.Start(socket =>
