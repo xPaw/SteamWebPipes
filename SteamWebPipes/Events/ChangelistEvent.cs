@@ -12,10 +12,10 @@ namespace SteamWebPipes
         public readonly uint ChangeNumber;
 
         [JsonProperty]
-        public readonly Dictionary<uint, string> Apps;
+        public readonly Dictionary<uint, Dictionary<string, string>> Apps;
 
         [JsonProperty]
-        public readonly Dictionary<uint, string> Packages;
+        public readonly Dictionary<uint, Dictionary<string, string>> Packages;
 
         public ChangelistEvent(SteamApps.PICSChangesCallback callback)
             : base("Changelist")
@@ -24,7 +24,14 @@ namespace SteamWebPipes
 
             if (callback.AppChanges.Any())
             {
-                Apps = callback.AppChanges.ToDictionary(x => x.Key, x => "Unknown App " + x.Key);
+                Apps = new Dictionary<uint, Dictionary<string, string>>();
+                foreach(KeyValuePair<uint, SteamApps.PICSChangesCallback.PICSChangeData> entry in callback.AppChanges)
+                {
+                    Dictionary<string, string> Properties = new Dictionary<string, string>();
+                    Properties.Add("Name", "Unknown App " + entry.Key);
+                    Properties.Add("ChangeNumber", entry.Value.ChangeNumber.ToString());
+                    Apps.Add(entry.Key, Properties);
+                }
 
                 if (Bootstrap.DatabaseConnectionString != null)
                 {
@@ -44,7 +51,7 @@ namespace SteamWebPipes
                                     name = string.Format("{0} ({1})", name, lastKnownName);
                                 }
 
-                                Apps[reader.GetUInt32(0)] = name;
+                                Apps[reader.GetUInt32(0)]["Name"] = name;
                             }
                         }
                     }
@@ -56,12 +63,19 @@ namespace SteamWebPipes
             }
             else
             {
-                Apps = new Dictionary<uint, string>();
+                Apps = new Dictionary<uint, Dictionary<string, string>>();
             }
 
             if (callback.PackageChanges.Any())
             {
-                Packages = callback.PackageChanges.ToDictionary(x => x.Key, x => "Unknown Package " + x.Key);
+                Packages = new Dictionary<uint, Dictionary<string, string>>();
+                foreach(KeyValuePair<uint, SteamApps.PICSChangesCallback.PICSChangeData> entry in callback.PackageChanges)
+                {
+                    Dictionary<string, string> Properties = new Dictionary<string, string>();
+                    Properties.Add("Name", "Unknown Package " + entry.Key);
+                    Properties.Add("ChangeNumber", entry.Value.ChangeNumber.ToString());
+                    Packages.Add(entry.Key, Properties);
+                }
 
                 if (Bootstrap.DatabaseConnectionString != null)
                 {
@@ -73,7 +87,7 @@ namespace SteamWebPipes
                         {
                             while (reader.Read())
                             {
-                                Packages[reader.GetUInt32(0)] = reader.GetString(1);
+                                Packages[reader.GetUInt32(0)]["Name"] = reader.GetString(1);
                             }
                         }
                     }
@@ -85,7 +99,7 @@ namespace SteamWebPipes
             }
             else
             {
-                Packages = new Dictionary<uint, string>();
+                Packages = new Dictionary<uint, Dictionary<string, string>>();
             }
         }
     }
