@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using SteamKit2;
+using System.Linq;
 
 namespace SteamWebPipes
 {
@@ -55,22 +56,45 @@ namespace SteamWebPipes
 
         private void OnPICSChanges(SteamApps.PICSChangesCallback callback)
         {
-            if (PreviousChangeNumber == callback.CurrentChangeNumber)
+            var previous = PreviousChangeNumber;
+
+            if (previous == callback.CurrentChangeNumber)
             {
                 return;
             }
+
+            PreviousChangeNumber = callback.CurrentChangeNumber;
 
             var packageChangesCount = callback.PackageChanges.Count;
             var appChangesCount = callback.AppChanges.Count;
 
             Bootstrap.Log("Changelist {0} -> {1} ({2} apps, {3} packages)", PreviousChangeNumber, callback.CurrentChangeNumber, appChangesCount, packageChangesCount);
 
-            if (PreviousChangeNumber > 0)
+            if (previous > 0)
             {
-                Bootstrap.Broadcast(new ChangelistEvent(callback));
+                return;
             }
 
-            PreviousChangeNumber = callback.CurrentChangeNumber;
+            // Group apps and package changes by changelist, this will seperate into individual changelists
+            var appGrouping = callback.AppChanges.Values.GroupBy(a => a.ChangeNumber);
+            var packageGrouping = callback.PackageChanges.Values.GroupBy(p => p.ChangeNumber);
+
+            // Join apps and packages back together based on changelist number
+            var changeLists = Utils.FullOuterJoin(appGrouping, packageGrouping, a => a.Key, p => p.Key, (a, p, key) => new SteamChangelist
+                {
+                    ChangeNumber = key,
+
+                    Apps = a.Select(x => x.ID),
+                    Packages = p.Select(x => x.ID),
+                },
+                new EmptyGrouping<uint, SteamApps.PICSChangesCallback.PICSChangeData>(),
+                new EmptyGrouping<uint, SteamApps.PICSChangesCallback.PICSChangeData>())
+                .OrderBy(c => c.ChangeNumber);
+
+            foreach (var changeList in changeLists)
+            {
+                Bootstrap.Broadcast(new ChangelistEvent(changeList));
+            }
         }
 
         private void OnConnected(SteamClient.ConnectedCallback callback)

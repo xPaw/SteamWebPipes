@@ -65,6 +65,8 @@
     <Compile Include="Events\LogOffEvent.cs" />
     <Compile Include="Events\LogOnEvent.cs" />
     <Compile Include="Events\UsersOnlineEvent.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="SteamChangelist.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

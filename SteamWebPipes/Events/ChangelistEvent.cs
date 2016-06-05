@@ -17,20 +17,20 @@ namespace SteamWebPipes
         [JsonProperty]
         public readonly Dictionary<uint, string> Packages;
 
-        public ChangelistEvent(SteamApps.PICSChangesCallback callback)
+        public ChangelistEvent(SteamChangelist changelist)
             : base("Changelist")
         {
-            ChangeNumber = callback.CurrentChangeNumber;
+            ChangeNumber = changelist.ChangeNumber;
 
-            if (callback.AppChanges.Any())
+            if (changelist.Apps.Any())
             {
-                Apps = callback.AppChanges.ToDictionary(x => x.Key, x => "Unknown App " + x.Key);
+                Apps = changelist.Apps.ToDictionary(x => x, x => "Unknown App " + x);
 
                 if (Bootstrap.DatabaseConnectionString != null)
                 {
                     try
                     {
-                        var apps = string.Join(",", callback.AppChanges.Keys);
+                        var apps = string.Join(",", changelist.Apps);
 
                         using (var reader = MySqlHelper.ExecuteReader(Bootstrap.DatabaseConnectionString, "SELECT `AppID`, `Name`, `LastKnownName` FROM `Apps` WHERE `AppID` IN(" + apps + ")"))
                         {
@@ -59,15 +59,15 @@ namespace SteamWebPipes
                 Apps = new Dictionary<uint, string>();
             }
 
-            if (callback.PackageChanges.Any())
+            if (changelist.Packages.Any())
             {
-                Packages = callback.PackageChanges.ToDictionary(x => x.Key, x => "Unknown Package " + x.Key);
+                Packages = changelist.Packages.ToDictionary(x => x, x => "Unknown Package " + x);
 
                 if (Bootstrap.DatabaseConnectionString != null)
                 {
                     try
                     {
-                        var subs = string.Join(",", callback.PackageChanges.Keys);
+                        var subs = string.Join(",", changelist.Packages);
 
                         using (var reader = MySqlHelper.ExecuteReader(Bootstrap.DatabaseConnectionString, "SELECT `SubID`, `LastKnownName` FROM `Subs` WHERE `SubID` IN(" + subs + ")"))
                         {
