@@ -70,7 +70,7 @@ namespace SteamWebPipes
 
             Bootstrap.Log("Changelist {0} -> {1} ({2} apps, {3} packages)", PreviousChangeNumber, callback.CurrentChangeNumber, appChangesCount, packageChangesCount);
 
-            if (previous > 0)
+            if (previous == 0)
             {
                 return;
             }
