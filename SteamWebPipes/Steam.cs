@@ -63,12 +63,12 @@ namespace SteamWebPipes
                 return;
             }
 
-            PreviousChangeNumber = callback.CurrentChangeNumber;
-
             var packageChangesCount = callback.PackageChanges.Count;
             var appChangesCount = callback.AppChanges.Count;
 
             Bootstrap.Log("Changelist {0} -> {1} ({2} apps, {3} packages)", PreviousChangeNumber, callback.CurrentChangeNumber, appChangesCount, packageChangesCount);
+
+            PreviousChangeNumber = callback.CurrentChangeNumber;
 
             if (previous == 0)
             {
