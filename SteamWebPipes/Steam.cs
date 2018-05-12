@@ -32,15 +32,6 @@ namespace SteamWebPipes
 
         public void Tick()
         {
-            var loadServersTask = SteamDirectory.Initialize(0);
-            loadServersTask.Wait();
-
-            if (loadServersTask.IsFaulted)
-            {
-                Console.WriteLine("Error loading server list from directory: {0}", loadServersTask.Exception.Message);
-                return;
-            }
-
             Client.Connect();
 
             while (IsRunning)
@@ -99,15 +90,6 @@ namespace SteamWebPipes
 
         private void OnConnected(SteamClient.ConnectedCallback callback)
         {
-            if (callback.Result != EResult.OK)
-            {
-                Bootstrap.Log("Could not connect to Steam: {0}", callback.Result);
-
-                IsRunning = false;
-
-                return;
-            }
-
             Bootstrap.Log("Connected to Steam, logging in...");
 
             User.LogOnAnonymous();

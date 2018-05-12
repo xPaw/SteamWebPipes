@@ -26,13 +26,13 @@ namespace SteamWebPipes
             {
                 Apps = changelist.Apps.ToDictionary(x => x, x => "Unknown App " + x);
 
-                if (Bootstrap.DatabaseConnectionString != null)
+                if (Bootstrap.Config.DatabaseConnectionString != null)
                 {
                     try
                     {
                         var apps = string.Join(",", changelist.Apps);
 
-                        using (var reader = MySqlHelper.ExecuteReader(Bootstrap.DatabaseConnectionString, "SELECT `AppID`, `Name`, `LastKnownName` FROM `Apps` WHERE `AppID` IN(" + apps + ")"))
+                        using (var reader = MySqlHelper.ExecuteReader(Bootstrap.Config.DatabaseConnectionString, "SELECT `AppID`, `Name`, `LastKnownName` FROM `Apps` WHERE `AppID` IN(" + apps + ")"))
                         {
                             while (reader.Read())
                             {
@@ -63,13 +63,13 @@ namespace SteamWebPipes
             {
                 Packages = changelist.Packages.ToDictionary(x => x, x => "Unknown Package " + x);
 
-                if (Bootstrap.DatabaseConnectionString != null)
+                if (Bootstrap.Config.DatabaseConnectionString != null)
                 {
                     try
                     {
                         var subs = string.Join(",", changelist.Packages);
 
-                        using (var reader = MySqlHelper.ExecuteReader(Bootstrap.DatabaseConnectionString, "SELECT `SubID`, `LastKnownName` FROM `Subs` WHERE `SubID` IN(" + subs + ")"))
+                        using (var reader = MySqlHelper.ExecuteReader(Bootstrap.Config.DatabaseConnectionString, "SELECT `SubID`, `LastKnownName` FROM `Subs` WHERE `SubID` IN(" + subs + ")"))
                         {
                             while (reader.Read())
                             {

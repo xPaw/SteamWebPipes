@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -14,32 +13,37 @@ namespace SteamWebPipes
 {
     internal static class Bootstrap
     {
+        public class Configuration
+        {
+            public string Location { get; set; }
+            public string DatabaseConnectionString { get; set; }
+            public string X509Certificate { get; set; }
+        }
+
         private static int LastBroadcastConnectedUsers;
-        private static List<IWebSocketConnection> ConnectedClients = new List<IWebSocketConnection>();
-        public static string DatabaseConnectionString;
+        private static readonly List<IWebSocketConnection> ConnectedClients = new List<IWebSocketConnection>();
+        public static Configuration Config { get; private set; }
 
         private static void Main()
         {
             Console.Title = "SteamWebPipes";
 
-            DatabaseConnectionString = ConfigurationManager.AppSettings["Database"];
-
-            if (string.IsNullOrWhiteSpace(Bootstrap.DatabaseConnectionString))
+            Config = JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(Path.Combine(Path.GetDirectoryName(typeof(Bootstrap).Assembly.Location), "settings.json")));
+            
+            if (string.IsNullOrWhiteSpace(Config.DatabaseConnectionString))
             {
-                Bootstrap.DatabaseConnectionString = null;
+                Config.DatabaseConnectionString = null;
 
                 Log("Database connectiong string is empty, will not try to get app names");
             }
-
-            var cert = ConfigurationManager.AppSettings["X509Certificate"];
-
-            var server = new WebSocketServer(ConfigurationManager.AppSettings["Location"]);
+            
+            var server = new WebSocketServer(Config.Location);
             server.SupportedSubProtocols = new[] { "steam-pics" };
 
-            if (File.Exists(cert))
+            if (File.Exists(Config.X509Certificate))
             {
                 Log("Using certificate");
-                server.Certificate = new X509Certificate2(cert);
+                server.Certificate = new X509Certificate2(Config.X509Certificate);
             }
 
             server.Start(socket =>

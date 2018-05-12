@@ -1,0 +1,5 @@
+﻿{
+	"Location": "ws://0.0.0.0:8181",
+	"DatabaseConnectionString": "",
+	"X509Certificate": "cert.pfx"
+}
