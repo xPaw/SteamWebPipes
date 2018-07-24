@@ -56,7 +56,7 @@ namespace SteamWebPipes
 
                     socket.Send(JsonConvert.SerializeObject(new UsersOnlineEvent(ConnectedClients.Count)));
                 };
-                    
+
                 socket.OnClose = () =>
                 {
                     Log("Client #{2} disconnected: {0}:{1}", socket.ConnectionInfo.ClientIpAddress, socket.ConnectionInfo.ClientPort, ConnectedClients.Count);
@@ -120,21 +120,7 @@ namespace SteamWebPipes
 
         private static void Broadcast(string message)
         {
-            for (int i = ConnectedClients.Count - 1; i >= 0; i--)
-            {
-                var socket = ConnectedClients[i];
-
-                if (!socket.IsAvailable)
-                {
-                    Log("Removing dead client #{2}: {0}:{1}", socket.ConnectionInfo.ClientIpAddress, socket.ConnectionInfo.ClientPort, ConnectedClients.Count);
-
-                    ConnectedClients.RemoveAt(i);
-
-                    continue;
-                }
-
-                socket.Send(message);
-            }
+            ConnectedClients.ForEach(socket => socket?.Send(message));
         }
 
         public static void Log(string format, params object[] args)
