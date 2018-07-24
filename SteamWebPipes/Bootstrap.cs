@@ -52,18 +52,28 @@ namespace SteamWebPipes
                 {
                     ConnectedClients.Add(socket);
 
+                    socket.Send(JsonConvert.SerializeObject(new UsersOnlineEvent(ConnectedClients.Count)));
+
+                    if (ConnectedClients.Count > 500)
+                    {
+                        return;
+                    }
+
                     socket.ConnectionInfo.Headers.TryGetValue("X-Forwarded-For", out var forwardedFor);
                     
                     Log($"Client #{ConnectedClients.Count} connected: {socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort} ({forwardedFor})");
-
-                    socket.Send(JsonConvert.SerializeObject(new UsersOnlineEvent(ConnectedClients.Count)));
                 };
 
                 socket.OnClose = () =>
                 {
-                    Log("Client #{2} disconnected: {0}:{1}", socket.ConnectionInfo.ClientIpAddress, socket.ConnectionInfo.ClientPort, ConnectedClients.Count);
-
                     ConnectedClients.Remove(socket);
+
+                    if (ConnectedClients.Count > 500)
+                    {
+                        return;
+                    }
+
+                    Log("Client #{2} disconnected: {0}:{1}", socket.ConnectionInfo.ClientIpAddress, socket.ConnectionInfo.ClientPort, ConnectedClients.Count);
                 };
             });
 
