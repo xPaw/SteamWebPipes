@@ -97,10 +97,7 @@ namespace SteamWebPipes
                 steam.IsRunning = false;
                 timer.Stop();
 
-                foreach (var socket in ConnectedClients.ToList())
-                {
-                    socket.Close();
-                }
+                ConnectedClients.ToList().ForEach(socket => socket?.Close());
 
                 server.Dispose();
             };
