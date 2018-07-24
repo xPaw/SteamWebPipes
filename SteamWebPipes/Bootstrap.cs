@@ -122,7 +122,7 @@ namespace SteamWebPipes
 
         private static void Broadcast(string message)
         {
-            ConnectedClients.ForEach(socket => socket?.Send(message));
+            ConnectedClients.ToList().ForEach(socket => socket?.Send(message));
         }
 
         public static void Log(string format, params object[] args)
