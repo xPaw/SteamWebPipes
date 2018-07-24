@@ -87,7 +87,6 @@ namespace SteamWebPipes
                 File.WriteAllText("last-changenumber.txt", steam.PreviousChangeNumber.ToString());
 
                 steam.IsRunning = false;
-                thread.Abort();
                 timer.Stop();
 
                 foreach (var socket in ConnectedClients.ToList())
