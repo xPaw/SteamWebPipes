@@ -118,6 +118,8 @@ namespace SteamWebPipes
             LastBroadcastConnectedUsers = users;
 
             Broadcast(new UsersOnlineEvent(users));
+
+            Log($"{users} users connected");
         }
 
         public static void Broadcast(AbstractEvent ev)
