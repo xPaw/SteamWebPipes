@@ -52,7 +52,9 @@ namespace SteamWebPipes
                 {
                     ConnectedClients.Add(socket);
 
-                    Log("Client #{2} connected: {0}:{1}", socket.ConnectionInfo.ClientIpAddress, socket.ConnectionInfo.ClientPort, ConnectedClients.Count);
+                    socket.ConnectionInfo.Headers.TryGetValue("X-Forwarded-For", out var forwardedFor);
+                    
+                    Log($"Client #{ConnectedClients.Count} connected: {socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort} ({forwardedFor})");
 
                     socket.Send(JsonConvert.SerializeObject(new UsersOnlineEvent(ConnectedClients.Count)));
                 };
