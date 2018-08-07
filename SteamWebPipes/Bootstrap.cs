@@ -126,7 +126,23 @@ namespace SteamWebPipes
 
         private static void Broadcast(string message)
         {
-            ConnectedClients.ToList().ForEach(socket => socket?.Send(message));
+            for (var i = ConnectedClients.Count - 1; i >= 0; i--)
+            {
+                var socket = ConnectedClients[i];
+
+                if (socket == null)
+                {
+                    continue;
+                }
+
+                if (!socket.IsAvailable)
+                {
+                    ConnectedClients.RemoveAt(i);
+                    continue;
+                }
+
+                socket.Send(message);
+            }
         }
 
         public static void Log(string format, params object[] args)
