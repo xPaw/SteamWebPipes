@@ -5,8 +5,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Fleck" Version="1.0.3" />
-    <PackageReference Include="MySql.Data" Version="8.0.12" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="MySql.Data" Version="8.0.13" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="SteamKit2" Version="2.1.0" />
   </ItemGroup>
   <ItemGroup>

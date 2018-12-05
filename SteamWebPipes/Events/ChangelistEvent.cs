@@ -2,7 +2,6 @@
 using System.Linq;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
-using SteamKit2;
 
 namespace SteamWebPipes
 {
