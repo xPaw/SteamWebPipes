@@ -50,7 +50,10 @@ namespace SteamWebPipes
             {
                 socket.OnOpen = () =>
                 {
-                    ConnectedClients.Add(socket);
+                    lock (ConnectedClients)
+                    {
+                        ConnectedClients.Add(socket);
+                    }
 
                     socket.Send(JsonConvert.SerializeObject(new UsersOnlineEvent(ConnectedClients.Count)));
 
@@ -64,7 +67,10 @@ namespace SteamWebPipes
 
                 socket.OnClose = () =>
                 {
-                    ConnectedClients.Remove(socket);
+                    lock (ConnectedClients)
+                    {
+                        ConnectedClients.Remove(socket);
+                    }
 
                     if (ConnectedClients.Count < 500)
                     {
@@ -126,22 +132,25 @@ namespace SteamWebPipes
 
         private static void Broadcast(string message)
         {
-            for (var i = ConnectedClients.Count - 1; i >= 0; i--)
+            lock (ConnectedClients)
             {
-                var socket = ConnectedClients[i];
-
-                if (socket == null)
+                for (var i = ConnectedClients.Count - 1; i >= 0; i--)
                 {
-                    continue;
-                }
+                    var socket = ConnectedClients[i];
 
-                if (!socket.IsAvailable)
-                {
-                    ConnectedClients.RemoveAt(i);
-                    continue;
-                }
+                    if (socket == null)
+                    {
+                        continue;
+                    }
 
-                socket.Send(message);
+                    if (!socket.IsAvailable)
+                    {
+                        ConnectedClients.RemoveAt(i);
+                        continue;
+                    }
+
+                    socket.Send(message);
+                }
             }
         }
 
