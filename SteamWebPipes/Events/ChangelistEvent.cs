@@ -2,11 +2,25 @@
 using System.Linq;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
+using Dapper;
 
 namespace SteamWebPipes
 {
     internal class ChangelistEvent : AbstractEvent
     {
+        private struct AppData
+        {
+            public uint AppID { get; set; }
+            public string Name { get; set; }
+            public string LastKnownName { get; set; }
+        }
+
+        private struct PackageData
+        {
+            public uint SubID { get; set; }
+            public string LastKnownName { get; set; }
+        }
+
         [JsonProperty]
         public readonly uint ChangeNumber;
 
@@ -29,21 +43,18 @@ namespace SteamWebPipes
                 {
                     try
                     {
-                        var apps = string.Join(",", changelist.Apps);
-
-                        using (var reader = MySqlHelper.ExecuteReader(Bootstrap.Config.DatabaseConnectionString, "SELECT `AppID`, `Name`, `LastKnownName` FROM `Apps` WHERE `AppID` IN(" + apps + ")"))
+                        using (var db = new MySqlConnection(Bootstrap.Config.DatabaseConnectionString))
                         {
-                            while (reader.Read())
+                            foreach (var app in db.Query<AppData>("SELECT `AppID`, `Name`, `LastKnownName` FROM `Apps` WHERE `AppID` IN @Apps", new { changelist.Apps }))
                             {
-                                var name = reader.GetString(1);
-                                var lastKnownName = reader.GetString(2);
-
-                                if (!string.IsNullOrEmpty(lastKnownName) && name != lastKnownName)
+                                if (!string.IsNullOrEmpty(app.LastKnownName) && app.Name != app.LastKnownName)
                                 {
-                                    name = string.Format("{0} ({1})", name, lastKnownName);
+                                    Apps[app.AppID] = $"{app.Name} ({app.LastKnownName})";
                                 }
-
-                                Apps[reader.GetUInt32(0)] = name;
+                                else
+                                {
+                                    Apps[app.AppID] = app.Name;
+                                }
                             }
                         }
                     }
@@ -66,13 +77,11 @@ namespace SteamWebPipes
                 {
                     try
                     {
-                        var subs = string.Join(",", changelist.Packages);
-
-                        using (var reader = MySqlHelper.ExecuteReader(Bootstrap.Config.DatabaseConnectionString, "SELECT `SubID`, `LastKnownName` FROM `Subs` WHERE `SubID` IN(" + subs + ")"))
+                        using (var db = new MySqlConnection(Bootstrap.Config.DatabaseConnectionString))
                         {
-                            while (reader.Read())
+                            foreach (var app in db.Query<PackageData>("SELECT `SubID`, `LastKnownName` FROM `Subs` WHERE `SubID` IN @Packages", new { changelist.Packages }))
                             {
-                                Packages[reader.GetUInt32(0)] = reader.GetString(1);
+                                Apps[app.SubID] = app.LastKnownName;
                             }
                         }
                     }

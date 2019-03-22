@@ -8,7 +8,7 @@ namespace SteamWebPipes
         [JsonProperty]
         public readonly string Type;
 
-        public AbstractEvent(string type)
+        protected AbstractEvent(string type)
         {
             Type = type;
         }

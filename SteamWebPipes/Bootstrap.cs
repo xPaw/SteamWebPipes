@@ -29,14 +29,14 @@ namespace SteamWebPipes
             Console.Title = "SteamWebPipes";
 
             Config = JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(Path.Combine(Path.GetDirectoryName(typeof(Bootstrap).Assembly.Location), "settings.json")));
-            
+
             if (string.IsNullOrWhiteSpace(Config.DatabaseConnectionString))
             {
                 Config.DatabaseConnectionString = null;
 
                 Log("Database connectiong string is empty, will not try to get app names");
             }
-            
+
             var server = new WebSocketServer(Config.Location);
             server.SupportedSubProtocols = new[] { "steam-pics" };
 
@@ -60,7 +60,7 @@ namespace SteamWebPipes
                     if (ConnectedClients.Count < 500)
                     {
                         socket.ConnectionInfo.Headers.TryGetValue("X-Forwarded-For", out var forwardedFor);
-                        
+
                         Log($"Client #{ConnectedClients.Count} connected: {socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort} ({forwardedFor})");
                     }
                 };
