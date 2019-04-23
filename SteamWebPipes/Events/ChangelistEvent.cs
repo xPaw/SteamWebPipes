@@ -79,9 +79,9 @@ namespace SteamWebPipes
                     {
                         using (var db = new MySqlConnection(Bootstrap.Config.DatabaseConnectionString))
                         {
-                            foreach (var app in db.Query<PackageData>("SELECT `SubID`, `LastKnownName` FROM `Subs` WHERE `SubID` IN @Packages", new { changelist.Packages }))
+                            foreach (var sub in db.Query<PackageData>("SELECT `SubID`, `LastKnownName` FROM `Subs` WHERE `SubID` IN @Packages", new { changelist.Packages }))
                             {
-                                Apps[app.SubID] = app.LastKnownName;
+                                Packages[sub.SubID] = sub.LastKnownName;
                             }
                         }
                     }
