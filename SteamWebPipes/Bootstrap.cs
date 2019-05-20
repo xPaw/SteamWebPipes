@@ -106,6 +106,8 @@ namespace SteamWebPipes
                 ConnectedClients.ToList().ForEach(socket => socket?.Close());
 
                 server.Dispose();
+
+                Environment.Exit(0);
             };
         }
 
