@@ -52,12 +52,9 @@ namespace SteamWebPipes
                 return;
             }
 
+            Bootstrap.Log("Changelist {0} -> {1} ({2} apps, {3} packages)", PreviousChangeNumber, callback.CurrentChangeNumber, callback.AppChanges.Count, callback.PackageChanges.Count);
+
             PreviousChangeNumber = callback.CurrentChangeNumber;
-
-            var packageChangesCount = callback.PackageChanges.Count;
-            var appChangesCount = callback.AppChanges.Count;
-
-            Bootstrap.Log("Changelist {0} -> {1} ({2} apps, {3} packages)", PreviousChangeNumber, callback.CurrentChangeNumber, appChangesCount, packageChangesCount);
 
             // Group apps and package changes by changelist, this will seperate into individual changelists
             var appGrouping = callback.AppChanges.Values.GroupBy(a => a.ChangeNumber);
