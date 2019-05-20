@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,6 +23,7 @@ namespace SteamWebPipes
 
         private static int LastBroadcastConnectedUsers;
         private static readonly List<IWebSocketConnection> ConnectedClients = new List<IWebSocketConnection>();
+        private static readonly ConcurrentDictionary<IWebSocketConnection, List<uint>> SubscribedAppClients = new ConcurrentDictionary<IWebSocketConnection, List<uint>>();
         public static Configuration Config { get; private set; }
 
         private static void Main()
@@ -50,6 +52,38 @@ namespace SteamWebPipes
             {
                 socket.OnOpen = () =>
                 {
+                    var apps = new List<uint>();
+
+                    foreach (var sub in socket.ConnectionInfo.SubProtocol.Split(','))
+                    {
+                        if (sub.Trim().StartsWith("app-"))
+                        {
+                            if (!uint.TryParse(sub.Substring(5), out var appid) || apps.Count > 50)
+                            {
+                                socket.Close();
+                                return;
+                            }
+
+                            apps.Add(appid);
+                        }
+                    }
+
+                    socket.ConnectionInfo.Headers.TryGetValue("X-Forwarded-For", out var clientIp);
+
+                    if (string.IsNullOrEmpty(clientIp))
+                    {
+                        clientIp = $"{socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort}";
+                    }
+
+                    if (apps.Count > 0)
+                    {
+                        SubscribedAppClients.TryAdd(socket, apps);
+
+                        Log($"Subscriber #{SubscribedAppClients.Count} connected: {clientIp} (Apps: {string.Join(", ", apps)})");
+
+                        return;
+                    }
+
                     lock (ConnectedClients)
                     {
                         ConnectedClients.Add(socket);
@@ -59,9 +93,7 @@ namespace SteamWebPipes
 
                     if (ConnectedClients.Count < 500)
                     {
-                        socket.ConnectionInfo.Headers.TryGetValue("X-Forwarded-For", out var forwardedFor);
-
-                        Log($"Client #{ConnectedClients.Count} connected: {socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort} ({forwardedFor})");
+                        Log($"Client #{ConnectedClients.Count} connected: {clientIp}");
                     }
                 };
 
@@ -72,10 +104,7 @@ namespace SteamWebPipes
                         ConnectedClients.Remove(socket);
                     }
 
-                    if (ConnectedClients.Count < 500)
-                    {
-                        Log("Client #{2} disconnected: {0}:{1}", socket.ConnectionInfo.ClientIpAddress, socket.ConnectionInfo.ClientPort, ConnectedClients.Count);
-                    }
+                    SubscribedAppClients.TryRemove(socket, out _);
                 };
             });
 
@@ -124,7 +153,20 @@ namespace SteamWebPipes
 
             Broadcast(new UsersOnlineEvent(users));
 
-            Log($"{users} users connected");
+            Log($"{users} users connected, {SubscribedAppClients.Count} app subscribers");
+        }
+
+        public static void SendAppsToSubscribers(Dictionary<uint, SteamKit2.SteamApps.PICSChangesCallback.PICSChangeData> apps)
+        {
+            foreach (var (socket, subscribedApps) in SubscribedAppClients)
+            {
+                var matches = apps.Keys.Intersect(subscribedApps);
+
+                foreach (var appid in matches)
+                {
+                    _ = socket.Send(JsonConvert.SerializeObject(new AppUpdateEvent(appid, apps[appid].ChangeNumber)));
+                }
+            }
         }
 
         public static void Broadcast(AbstractEvent ev)
