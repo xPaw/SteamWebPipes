@@ -47,24 +47,17 @@ namespace SteamWebPipes
 
         private void OnPICSChanges(SteamApps.PICSChangesCallback callback)
         {
-            var previous = PreviousChangeNumber;
-
-            if (previous == callback.CurrentChangeNumber)
+            if (PreviousChangeNumber == callback.CurrentChangeNumber)
             {
                 return;
             }
+
+            PreviousChangeNumber = callback.CurrentChangeNumber;
 
             var packageChangesCount = callback.PackageChanges.Count;
             var appChangesCount = callback.AppChanges.Count;
 
             Bootstrap.Log("Changelist {0} -> {1} ({2} apps, {3} packages)", PreviousChangeNumber, callback.CurrentChangeNumber, appChangesCount, packageChangesCount);
-
-            PreviousChangeNumber = callback.CurrentChangeNumber;
-
-            if (previous == 0)
-            {
-                return;
-            }
 
             // Group apps and package changes by changelist, this will seperate into individual changelists
             var appGrouping = callback.AppChanges.Values.GroupBy(a => a.ChangeNumber);
