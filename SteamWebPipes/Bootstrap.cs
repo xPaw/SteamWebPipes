@@ -144,14 +144,14 @@ namespace SteamWebPipes
         {
             var users = ConnectedClients.Count;
 
+            Broadcast(new UsersOnlineEvent(users));
+
             if (users == 0 || users == LastBroadcastConnectedUsers)
             {
                 return;
             }
 
             LastBroadcastConnectedUsers = users;
-
-            Broadcast(new UsersOnlineEvent(users));
 
             Log($"{users} users connected, {SubscribedAppClients.Count} app subscribers");
         }
