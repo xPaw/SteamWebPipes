@@ -14,8 +14,8 @@ namespace SteamWebPipes
             Func<TLeft, TKey> leftKeySelector,
             Func<TRight, TKey> rightKeySelector,
             Func<TLeft, TRight, TKey, TResult> resultSelector,
-            TLeft defaultLeft = default(TLeft),
-            TRight defaultRight = default(TRight))
+            TLeft defaultLeft = default,
+            TRight defaultRight = default)
         {
             var leftLookup = left.ToLookup(leftKeySelector);
             var rightLookup = right.ToLookup(rightKeySelector);

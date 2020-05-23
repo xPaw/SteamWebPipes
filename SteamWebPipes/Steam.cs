@@ -42,17 +42,19 @@ namespace SteamWebPipes
             {
                 CallbackManager.RunWaitCallbacks(timeout);
 
-                if (IsLoggedOn)
+                if (!IsLoggedOn)
                 {
-                    try
-                    {
-                        await Apps.PICSGetChangesSince(PreviousChangeNumber, true, true);
-                        await Task.Delay(random.Next(3000));
-                    }
-                    catch (Exception)
-                    {
-                        // ignore
-                    }
+                    continue;
+                }
+
+                try
+                {
+                    await Apps.PICSGetChangesSince(PreviousChangeNumber, true, true);
+                    await Task.Delay(random.Next(3000));
+                }
+                catch (Exception)
+                {
+                    // ignore
                 }
             }
         }
@@ -76,9 +78,8 @@ namespace SteamWebPipes
             var changeLists = Utils.FullOuterJoin(appGrouping, packageGrouping, a => a.Key, p => p.Key, (a, p, key) => new SteamChangelist
                 {
                     ChangeNumber = key,
-
                     Apps = a.Select(x => x.ID),
-                    Packages = p.Select(x => x.ID),
+                    Packages = p.Select(x => x.ID)
                 },
                 new EmptyGrouping<uint, SteamApps.PICSChangesCallback.PICSChangeData>(),
                 new EmptyGrouping<uint, SteamApps.PICSChangesCallback.PICSChangeData>())

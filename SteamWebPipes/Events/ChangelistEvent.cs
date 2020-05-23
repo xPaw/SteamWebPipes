@@ -43,18 +43,17 @@ namespace SteamWebPipes
                 {
                     try
                     {
-                        using (var db = new MySqlConnection(Bootstrap.Config.DatabaseConnectionString))
+                        using var db = new MySqlConnection(Bootstrap.Config.DatabaseConnectionString);
+
+                        foreach (var app in db.Query<AppData>("SELECT `AppID`, `Name`, `LastKnownName` FROM `Apps` WHERE `AppID` IN @Apps", new { changelist.Apps }))
                         {
-                            foreach (var app in db.Query<AppData>("SELECT `AppID`, `Name`, `LastKnownName` FROM `Apps` WHERE `AppID` IN @Apps", new { changelist.Apps }))
+                            if (!string.IsNullOrEmpty(app.LastKnownName) && app.Name != app.LastKnownName)
                             {
-                                if (!string.IsNullOrEmpty(app.LastKnownName) && app.Name != app.LastKnownName)
-                                {
-                                    Apps[app.AppID] = $"{app.Name} ({app.LastKnownName})";
-                                }
-                                else
-                                {
-                                    Apps[app.AppID] = app.Name;
-                                }
+                                Apps[app.AppID] = $"{app.Name} ({app.LastKnownName})";
+                            }
+                            else
+                            {
+                                Apps[app.AppID] = app.Name;
                             }
                         }
                     }
@@ -77,12 +76,11 @@ namespace SteamWebPipes
                 {
                     try
                     {
-                        using (var db = new MySqlConnection(Bootstrap.Config.DatabaseConnectionString))
+                        using var db = new MySqlConnection(Bootstrap.Config.DatabaseConnectionString);
+
+                        foreach (var sub in db.Query<PackageData>("SELECT `SubID`, `LastKnownName` FROM `Subs` WHERE `SubID` IN @Packages", new { changelist.Packages }))
                         {
-                            foreach (var sub in db.Query<PackageData>("SELECT `SubID`, `LastKnownName` FROM `Subs` WHERE `SubID` IN @Packages", new { changelist.Packages }))
-                            {
-                                Packages[sub.SubID] = sub.LastKnownName;
-                            }
+                            Packages[sub.SubID] = sub.LastKnownName;
                         }
                     }
                     catch (MySqlException e)
