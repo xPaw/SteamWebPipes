@@ -115,8 +115,10 @@ namespace SteamWebPipes
                 steam.PreviousChangeNumber = uint.Parse(File.ReadAllText("last-changenumber.txt"));
             }
 
-            var thread = new Thread(steam.Tick);
-            thread.Name = "Steam";
+            var thread = new Thread(steam.Tick)
+            {
+                Name = "Steam"
+            };
             thread.Start();
 
             var timer = new Timer();

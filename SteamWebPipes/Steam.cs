@@ -2,6 +2,7 @@
 using System.Threading;
 using SteamKit2;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SteamWebPipes
 {
@@ -11,7 +12,7 @@ namespace SteamWebPipes
         private readonly SteamClient Client;
         private readonly SteamUser User;
         private readonly SteamApps Apps;
-        private bool IsLoggedOn = false;
+        private bool IsLoggedOn;
 
         public uint PreviousChangeNumber;
         public bool IsRunning = true;
@@ -30,17 +31,28 @@ namespace SteamWebPipes
             CallbackManager.Subscribe<SteamApps.PICSChangesCallback>(OnPICSChanges);
         }
 
-        public void Tick()
+        public async void Tick()
         {
             Client.Connect();
 
+            var timeout = TimeSpan.FromSeconds(5);
+            var random = new Random();
+
             while (IsRunning)
             {
-                CallbackManager.RunWaitCallbacks(TimeSpan.FromSeconds(5));
+                CallbackManager.RunWaitCallbacks(timeout);
 
                 if (IsLoggedOn)
                 {
-                    Apps.PICSGetChangesSince(PreviousChangeNumber, true, true);
+                    try
+                    {
+                        await Apps.PICSGetChangesSince(PreviousChangeNumber, true, true);
+                        await Task.Delay(random.Next(3000));
+                    }
+                    catch (Exception)
+                    {
+                        // ignore
+                    }
                 }
             }
         }
