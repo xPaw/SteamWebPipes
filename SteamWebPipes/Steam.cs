@@ -40,22 +40,14 @@ namespace SteamWebPipes
 
             while (IsRunning)
             {
+                if (IsLoggedOn)
+                {
+                    _ = Apps.PICSGetChangesSince(PreviousChangeNumber, true, true);
+                }
+
                 CallbackManager.RunWaitCallbacks(timeout);
 
-                if (!IsLoggedOn)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    await Apps.PICSGetChangesSince(PreviousChangeNumber, true, true);
-                    await Task.Delay(random.Next(3000));
-                }
-                catch (Exception)
-                {
-                    // ignore
-                }
+                await Task.Delay(random.Next(3210));
             }
         }
 
