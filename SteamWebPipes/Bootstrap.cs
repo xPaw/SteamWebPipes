@@ -30,6 +30,8 @@ namespace SteamWebPipes
         {
             Console.Title = "SteamWebPipes";
 
+            AppDomain.CurrentDomain.UnhandledException += OnSillyCrashHandler;
+
             Config = JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(Path.Combine(Path.GetDirectoryName(typeof(Bootstrap).Assembly.Location), "settings.json")));
 
             if (string.IsNullOrWhiteSpace(Config.DatabaseConnectionString))
@@ -199,6 +201,30 @@ namespace SteamWebPipes
 
                     socket.Send(message);
                 }
+            }
+        }
+
+        private static void OnSillyCrashHandler(object sender, UnhandledExceptionEventArgs args)
+        {
+            var parentException = args.ExceptionObject as Exception;
+
+            if (parentException is AggregateException aggregateException)
+            {
+                aggregateException.Flatten().Handle(e =>
+                {
+                    Log("[UnhandledException] {0}", parentException);
+
+                    return false;
+                });
+            }
+            else
+            {
+                Log("[UnhandledException] {0}", parentException);
+            }
+
+            if (args.IsTerminating)
+            {
+                AppDomain.CurrentDomain.UnhandledException -= OnSillyCrashHandler;
             }
         }
 
