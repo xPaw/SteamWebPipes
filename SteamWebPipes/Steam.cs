@@ -8,6 +8,14 @@ namespace SteamWebPipes
 {
     internal class Steam
     {
+        public class SteamKitLogger : IDebugListener
+        {
+            public void WriteLine(string category, string msg)
+            {
+                Bootstrap.Log("[SteamKit] {0} {1}", category, msg);
+            }
+        }
+
         private readonly CallbackManager CallbackManager;
         private readonly SteamClient Client;
         private readonly SteamUser User;
@@ -19,6 +27,9 @@ namespace SteamWebPipes
 
         public Steam()
         {
+            DebugLog.AddListener(new SteamKitLogger());
+            DebugLog.Enabled = true;
+
             Client = new SteamClient();
             User = Client.GetHandler<SteamUser>();
             Apps = Client.GetHandler<SteamApps>();
