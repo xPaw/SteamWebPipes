@@ -39,7 +39,10 @@ namespace SteamWebPipes
                 Log("Database connectiong string is empty, will not try to get app names");
             }
 
-            var server = new WebSocketServer(Config.Location);
+            var server = new WebSocketServer(Config.Location)
+            {
+                SupportedSubProtocols = new[] {"steam-pics"}
+            };
 
             if (File.Exists(Config.X509Certificate))
             {
