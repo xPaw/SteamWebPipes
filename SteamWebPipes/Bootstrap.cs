@@ -51,14 +51,17 @@ namespace SteamWebPipes
             {
                 socket.OnOpen = () =>
                 {
+                    int users;
+
                     lock (ConnectedClients)
                     {
                         ConnectedClients.Add(socket);
+                        users = ConnectedClients.Count;
                     }
 
-                    socket.Send(JsonConvert.SerializeObject(new UsersOnlineEvent(ConnectedClients.Count)));
+                    socket.Send(JsonConvert.SerializeObject(new UsersOnlineEvent(users)));
 
-                    if (ConnectedClients.Count >= 500)
+                    if (users >= 500)
                     {
                         return;
                     }
@@ -70,7 +73,7 @@ namespace SteamWebPipes
                         clientIp = $"{socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort}";
                     }
 
-                    Log($"Client #{ConnectedClients.Count} connected: {clientIp}");
+                    Log($"Client #{users} connected: {clientIp}");
                 };
 
                 socket.OnClose = () =>
@@ -108,7 +111,10 @@ namespace SteamWebPipes
                 steam.IsRunning = false;
                 timer.Stop();
 
-                ConnectedClients.ToList().ForEach(socket => socket?.Close());
+                lock (ConnectedClients)
+                {
+                    ConnectedClients.ToList().ForEach(socket => socket?.Close());
+                }
 
                 server.Dispose();
 
@@ -118,7 +124,12 @@ namespace SteamWebPipes
 
         private static void TimerTick(object sender, ElapsedEventArgs e)
         {
-            var users = ConnectedClients.Count;
+            int users;
+
+            lock (ConnectedClients)
+            {
+                users = ConnectedClients.Count;
+            }
 
             Broadcast(new UsersOnlineEvent(users));
 
