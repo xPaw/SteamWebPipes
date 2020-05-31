@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace SteamWebPipes
+namespace SteamWebPipes.Events
 {
     internal class UsersOnlineEvent : AbstractEvent
     {

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Timers;
 using Fleck;
 using Newtonsoft.Json;
+using SteamWebPipes.Events;
 using Timer = System.Timers.Timer;
 
 namespace SteamWebPipes

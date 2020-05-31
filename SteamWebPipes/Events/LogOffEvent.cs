@@ -1,4 +1,4 @@
-﻿namespace SteamWebPipes
+﻿namespace SteamWebPipes.Events
 {
     internal class LogOffEvent : AbstractEvent
     {

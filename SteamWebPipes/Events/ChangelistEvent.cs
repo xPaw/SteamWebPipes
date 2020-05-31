@@ -4,7 +4,7 @@ using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using Dapper;
 
-namespace SteamWebPipes
+namespace SteamWebPipes.Events
 {
     internal class ChangelistEvent : AbstractEvent
     {

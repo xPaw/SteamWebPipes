@@ -3,6 +3,7 @@ using System.Threading;
 using SteamKit2;
 using System.Linq;
 using System.Threading.Tasks;
+using SteamWebPipes.Events;
 
 namespace SteamWebPipes
 {
