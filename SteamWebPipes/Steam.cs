@@ -92,8 +92,6 @@ namespace SteamWebPipes
             {
                 Bootstrap.Broadcast(new ChangelistEvent(changeList));
             }
-
-            Bootstrap.SendAppsToSubscribers(callback.AppChanges);
         }
 
         private void OnConnected(SteamClient.ConnectedCallback callback)

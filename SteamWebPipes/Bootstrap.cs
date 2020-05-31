@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,7 +22,6 @@ namespace SteamWebPipes
 
         private static int LastBroadcastConnectedUsers;
         private static readonly List<IWebSocketConnection> ConnectedClients = new List<IWebSocketConnection>();
-        private static readonly ConcurrentDictionary<IWebSocketConnection, List<uint>> SubscribedAppClients = new ConcurrentDictionary<IWebSocketConnection, List<uint>>();
         public static Configuration Config { get; private set; }
 
         private static void Main()
@@ -41,10 +39,7 @@ namespace SteamWebPipes
                 Log("Database connectiong string is empty, will not try to get app names");
             }
 
-            var server = new WebSocketServer(Config.Location)
-            {
-                SupportedSubProtocols = new[] {"steam-pics"}
-            };
+            var server = new WebSocketServer(Config.Location);
 
             if (File.Exists(Config.X509Certificate))
             {
@@ -56,20 +51,16 @@ namespace SteamWebPipes
             {
                 socket.OnOpen = () =>
                 {
-                    var apps = new List<uint>();
-
-                    foreach (var sub in socket.ConnectionInfo.SubProtocol.Split(','))
+                    lock (ConnectedClients)
                     {
-                        if (sub.Trim().StartsWith("app-"))
-                        {
-                            if (!uint.TryParse(sub.Substring(5), out var appid) || apps.Count > 50)
-                            {
-                                socket.Close();
-                                return;
-                            }
+                        ConnectedClients.Add(socket);
+                    }
 
-                            apps.Add(appid);
-                        }
+                    socket.Send(JsonConvert.SerializeObject(new UsersOnlineEvent(ConnectedClients.Count)));
+
+                    if (ConnectedClients.Count >= 500)
+                    {
+                        return;
                     }
 
                     socket.ConnectionInfo.Headers.TryGetValue("X-Forwarded-For", out var clientIp);
@@ -79,26 +70,7 @@ namespace SteamWebPipes
                         clientIp = $"{socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort}";
                     }
 
-                    if (apps.Count > 0)
-                    {
-                        SubscribedAppClients.TryAdd(socket, apps);
-
-                        Log($"Subscriber #{SubscribedAppClients.Count} connected: {clientIp} (Apps: {string.Join(", ", apps)})");
-
-                        return;
-                    }
-
-                    lock (ConnectedClients)
-                    {
-                        ConnectedClients.Add(socket);
-                    }
-
-                    socket.Send(JsonConvert.SerializeObject(new UsersOnlineEvent(ConnectedClients.Count)));
-
-                    if (ConnectedClients.Count < 500)
-                    {
-                        Log($"Client #{ConnectedClients.Count} connected: {clientIp}");
-                    }
+                    Log($"Client #{ConnectedClients.Count} connected: {clientIp}");
                 };
 
                 socket.OnClose = () =>
@@ -107,8 +79,6 @@ namespace SteamWebPipes
                     {
                         ConnectedClients.Remove(socket);
                     }
-
-                    SubscribedAppClients.TryRemove(socket, out _);
                 };
             });
 
@@ -159,20 +129,7 @@ namespace SteamWebPipes
 
             LastBroadcastConnectedUsers = users;
 
-            Log($"{users} users connected, {SubscribedAppClients.Count} app subscribers");
-        }
-
-        public static void SendAppsToSubscribers(Dictionary<uint, SteamKit2.SteamApps.PICSChangesCallback.PICSChangeData> apps)
-        {
-            foreach (var (socket, subscribedApps) in SubscribedAppClients)
-            {
-                var matches = apps.Keys.Intersect(subscribedApps);
-
-                foreach (var appid in matches)
-                {
-                    _ = socket.Send(JsonConvert.SerializeObject(new AppUpdateEvent(appid, apps[appid].ChangeNumber)));
-                }
-            }
+            Log($"{users} users connected");
         }
 
         public static void Broadcast(AbstractEvent ev)
