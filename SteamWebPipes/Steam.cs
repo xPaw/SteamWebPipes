@@ -43,7 +43,7 @@ namespace SteamWebPipes
             CallbackManager.Subscribe<SteamApps.PICSChangesCallback>(OnPICSChanges);
         }
 
-        public async void Tick()
+        public void Tick()
         {
             Client.Connect();
 
@@ -59,7 +59,8 @@ namespace SteamWebPipes
 
                 CallbackManager.RunWaitCallbacks(timeout);
 
-                await Task.Delay(random.Next(3210));
+                // Not using await because it causes the thread to quit (e.g. Steamkit netloop stops)
+                Task.Delay(random.Next(3210)).GetAwaiter().GetResult();
             }
         }
 
