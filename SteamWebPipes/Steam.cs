@@ -59,8 +59,7 @@ namespace SteamWebPipes
 
                 CallbackManager.RunWaitCallbacks(timeout);
 
-                // Not using await because it causes the thread to quit (e.g. Steamkit netloop stops)
-                Task.Delay(random.Next(3210)).GetAwaiter().GetResult();
+                Thread.Sleep(random.Next(3210));
             }
         }
 
