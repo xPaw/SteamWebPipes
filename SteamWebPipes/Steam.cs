@@ -52,12 +52,12 @@ namespace SteamWebPipes
 
             while (IsRunning)
             {
+                CallbackManager.RunWaitCallbacks(timeout);
+
                 if (IsLoggedOn)
                 {
                     _ = Apps.PICSGetChangesSince(PreviousChangeNumber, true, true);
                 }
-
-                CallbackManager.RunWaitCallbacks(timeout);
 
                 Thread.Sleep(random.Next(3210));
             }
