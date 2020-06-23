@@ -96,12 +96,6 @@ namespace SteamWebPipes
                 steam.PreviousChangeNumber = uint.Parse(File.ReadAllText("last-changenumber.txt"));
             }
 
-            var thread = new Thread(steam.Tick)
-            {
-                Name = "Steam"
-            };
-            thread.Start();
-
             var timer = new Timer();
             timer.Elapsed += TimerTick;
             timer.Interval = TimeSpan.FromSeconds(30).TotalMilliseconds;
@@ -124,6 +118,8 @@ namespace SteamWebPipes
 
                 Environment.Exit(0);
             };
+
+            steam.Tick();
         }
 
         private static void TimerTick(object sender, ElapsedEventArgs e)
