@@ -22,6 +22,7 @@ namespace SteamWebPipes
         private readonly SteamUser User;
         private readonly SteamApps Apps;
         private bool IsLoggedOn;
+        private uint TickerHash;
 
         public uint PreviousChangeNumber;
         public bool IsRunning = true;
@@ -48,19 +49,47 @@ namespace SteamWebPipes
             Client.Connect();
 
             var timeout = TimeSpan.FromSeconds(5);
-            var random = new Random();
 
             while (IsRunning)
             {
                 CallbackManager.RunWaitCallbacks(timeout);
-
-                if (IsLoggedOn)
-                {
-                    _ = Apps.PICSGetChangesSince(PreviousChangeNumber, true, true);
-                }
-
-                Thread.Sleep(random.Next(3210));
             }
+        }
+
+        private async Task ChangesTick()
+        {
+            var currentHash = TickerHash;
+            var random = new Random();
+            
+            if (currentHash == 0)
+            {
+                Bootstrap.Log("Waiting a minute before requesting changes, to give a chance for users to reconnect");
+                await Task.Delay(60000 + random.Next(10000));
+            }
+            else
+            {
+                Bootstrap.Log($"PICS ticker started #{currentHash}");
+            }
+
+            while (currentHash == TickerHash)
+            {
+                try
+                {
+                    await Apps.PICSGetChangesSince(PreviousChangeNumber, true, true);
+                }
+                catch (OperationCanceledException)
+                {
+                    Bootstrap.Log("PICSGetChangesSince task was cancelled");
+                }
+                catch (AsyncJobFailedException)
+                {
+                    Bootstrap.Log("PICSGetChangesSince async job failed");
+                }
+                
+                await Task.Delay(random.Next(3210));
+            }
+
+            Bootstrap.Log($"PICS ticker stopped #{currentHash}");
         }
 
         private void OnPICSChanges(SteamApps.PICSChangesCallback callback)
@@ -116,6 +145,7 @@ namespace SteamWebPipes
                 Bootstrap.Broadcast(new LogOffEvent());
 
                 IsLoggedOn = false;
+                TickerHash++;
             }
 
             Bootstrap.Log("Disconnected from Steam. Retrying...");
@@ -141,6 +171,8 @@ namespace SteamWebPipes
             Bootstrap.Broadcast(new LogOnEvent());
 
             Bootstrap.Log("Logged in, current valve time is {0} UTC", callback.ServerTime);
+
+            Task.Run(ChangesTick);
         }
 
         private void OnLoggedOff(SteamUser.LoggedOffCallback callback)
@@ -150,6 +182,7 @@ namespace SteamWebPipes
                 Bootstrap.Broadcast(new LogOffEvent());
 
                 IsLoggedOn = false;
+                TickerHash++;
             }
 
             Bootstrap.Log("Logged off from Steam");
