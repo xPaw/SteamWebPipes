@@ -144,11 +144,8 @@ namespace SteamWebPipes
 
         public static void Broadcast<T>(T ev)
         {
-            Broadcast(JsonSerializer.Serialize(ev));
-        }
+            var message = JsonSerializer.Serialize(ev);
 
-        private static void Broadcast(string message)
-        {
             lock (ConnectedClients)
             {
                 for (var i = ConnectedClients.Count - 1; i >= 0; i--)
