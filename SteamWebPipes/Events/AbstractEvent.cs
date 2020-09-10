@@ -1,12 +1,8 @@
-using Newtonsoft.Json;
-
 namespace SteamWebPipes.Events
 {
-    [JsonObject(MemberSerialization.OptIn)]
 	internal abstract class AbstractEvent
 	{
-        [JsonProperty]
-        public readonly string Type;
+        public string Type { get; private set; }
 
         protected AbstractEvent(string type)
         {

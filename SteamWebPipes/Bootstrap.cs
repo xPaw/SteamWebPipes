@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
+using System.Text.Json;
 using System.Timers;
 using Fleck;
-using Newtonsoft.Json;
 using SteamWebPipes.Events;
 using Timer = System.Timers.Timer;
 
@@ -31,7 +30,7 @@ namespace SteamWebPipes
 
             AppDomain.CurrentDomain.UnhandledException += OnSillyCrashHandler;
 
-            Config = JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(Path.Combine(Path.GetDirectoryName(typeof(Bootstrap).Assembly.Location), "settings.json")));
+            Config = JsonSerializer.Deserialize<Configuration>(File.ReadAllText(Path.Combine(Path.GetDirectoryName(typeof(Bootstrap).Assembly.Location), "settings.json")));
 
             if (string.IsNullOrWhiteSpace(Config.DatabaseConnectionString))
             {
@@ -63,7 +62,7 @@ namespace SteamWebPipes
                         users = ConnectedClients.Count;
                     }
 
-                    socket.Send(JsonConvert.SerializeObject(new UsersOnlineEvent(users)));
+                    socket.Send(JsonSerializer.Serialize(new UsersOnlineEvent(users)));
 
                     if (users >= 500)
                     {
@@ -143,9 +142,9 @@ namespace SteamWebPipes
             Log($"{users} users connected");
         }
 
-        public static void Broadcast(AbstractEvent ev)
+        public static void Broadcast<T>(T ev)
         {
-            Broadcast(JsonConvert.SerializeObject(ev));
+            Broadcast(JsonSerializer.Serialize(ev));
         }
 
         private static void Broadcast(string message)

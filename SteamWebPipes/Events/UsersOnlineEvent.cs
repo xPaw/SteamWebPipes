@@ -1,11 +1,8 @@
-﻿using Newtonsoft.Json;
-
-namespace SteamWebPipes.Events
+﻿namespace SteamWebPipes.Events
 {
     internal class UsersOnlineEvent : AbstractEvent
     {
-        [JsonProperty]
-        public readonly int Users;
+        public int Users { get; private set; }
 
         public UsersOnlineEvent(int num)
             : base("UsersOnline")

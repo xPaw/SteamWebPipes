@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using MySqlConnector;
-using Newtonsoft.Json;
 using Dapper;
 
 namespace SteamWebPipes.Events
@@ -21,14 +20,9 @@ namespace SteamWebPipes.Events
             public string LastKnownName { get; set; }
         }
 
-        [JsonProperty]
-        public readonly uint ChangeNumber;
-
-        [JsonProperty]
-        public readonly Dictionary<uint, string> Apps;
-
-        [JsonProperty]
-        public readonly Dictionary<uint, string> Packages;
+        public uint ChangeNumber { get; private set; }
+        public Dictionary<string, string> Apps { get; private set; }
+        public Dictionary<string, string> Packages { get; private set; }
 
         public ChangelistEvent(SteamChangelist changelist)
             : base("Changelist")
@@ -37,7 +31,7 @@ namespace SteamWebPipes.Events
 
             if (changelist.Apps.Any())
             {
-                Apps = changelist.Apps.ToDictionary(x => x, x => "Unknown App " + x);
+                var apps = changelist.Apps.ToDictionary(x => x, x => "Unknown App " + x);
 
                 if (Bootstrap.Config.DatabaseConnectionString != null)
                 {
@@ -49,11 +43,11 @@ namespace SteamWebPipes.Events
                         {
                             if (!string.IsNullOrEmpty(app.LastKnownName) && app.Name != app.LastKnownName)
                             {
-                                Apps[app.AppID] = $"{app.Name} ({app.LastKnownName})";
+                                apps[app.AppID] = $"{app.Name} ({app.LastKnownName})";
                             }
                             else
                             {
-                                Apps[app.AppID] = app.Name;
+                                apps[app.AppID] = app.Name;
                             }
                         }
                     }
@@ -62,15 +56,17 @@ namespace SteamWebPipes.Events
                         Bootstrap.Log("{0}", e.Message);
                     }
                 }
+
+                Apps = apps.ToDictionary(x => x.Key.ToString(), x => x.Value);
             }
             else
             {
-                Apps = new Dictionary<uint, string>();
+                Apps = new Dictionary<string, string>();
             }
 
             if (changelist.Packages.Any())
             {
-                Packages = changelist.Packages.ToDictionary(x => x, x => "Unknown Package " + x);
+                var packages = changelist.Packages.ToDictionary(x => x, x => "Unknown Package " + x);
 
                 if (Bootstrap.Config.DatabaseConnectionString != null)
                 {
@@ -80,7 +76,7 @@ namespace SteamWebPipes.Events
 
                         foreach (var sub in db.Query<PackageData>("SELECT `SubID`, `LastKnownName` FROM `Subs` WHERE `SubID` IN @Packages", new { changelist.Packages }))
                         {
-                            Packages[sub.SubID] = sub.LastKnownName;
+                            packages[sub.SubID] = sub.LastKnownName;
                         }
                     }
                     catch (MySqlException e)
@@ -88,10 +84,12 @@ namespace SteamWebPipes.Events
                         Bootstrap.Log("{0}", e.Message);
                     }
                 }
+
+                Packages = packages.ToDictionary(x => x.Key.ToString(), x => x.Value);
             }
             else
             {
-                Packages = new Dictionary<uint, string>();
+                Packages = new Dictionary<string, string>();
             }
         }
     }
