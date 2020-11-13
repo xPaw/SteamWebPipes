@@ -30,7 +30,7 @@ namespace SteamWebPipes
 
             AppDomain.CurrentDomain.UnhandledException += OnSillyCrashHandler;
 
-            Config = JsonSerializer.Deserialize<Configuration>(File.ReadAllText(Path.Combine(Path.GetDirectoryName(typeof(Bootstrap).Assembly.Location), "settings.json")));
+            Config = JsonSerializer.Deserialize<Configuration>(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "settings.json")));
 
             if (string.IsNullOrWhiteSpace(Config.DatabaseConnectionString))
             {
