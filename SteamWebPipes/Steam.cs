@@ -77,13 +77,9 @@ namespace SteamWebPipes
                 {
                     await Apps.PICSGetChangesSince(PreviousChangeNumber, true, true);
                 }
-                catch (OperationCanceledException)
+                catch (Exception e)
                 {
-                    Bootstrap.Log("PICSGetChangesSince task was cancelled");
-                }
-                catch (AsyncJobFailedException)
-                {
-                    Bootstrap.Log("PICSGetChangesSince async job failed");
+                    Bootstrap.Log($"PICSGetChangesSince: {e.GetType().Name}: {e.Message}");
                 }
                 
                 await Task.Delay(random.Next(3210));
