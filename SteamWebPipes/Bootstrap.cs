@@ -21,7 +21,7 @@ namespace SteamWebPipes
         }
 
         private static int LastBroadcastConnectedUsers;
-        private static readonly List<IWebSocketConnection> ConnectedClients = new List<IWebSocketConnection>();
+        private static readonly List<IWebSocketConnection> ConnectedClients = new();
         public static Configuration Config { get; private set; }
 
         private static void Main()
@@ -41,7 +41,7 @@ namespace SteamWebPipes
 
             var server = new WebSocketServer(Config.Location)
             {
-                SupportedSubProtocols = new[] {"steam-pics"}
+                SupportedSubProtocols = new[] { "steam-pics" }
             };
 
             if (File.Exists(Config.X509Certificate))
@@ -100,9 +100,8 @@ namespace SteamWebPipes
             timer.Interval = TimeSpan.FromSeconds(30).TotalMilliseconds;
             timer.Start();
 
-            Console.CancelKeyPress += delegate
+            void Exit()
             {
-                Console.WriteLine("Ctrl + C detected, shutting down.");
                 File.WriteAllText("last-changenumber.txt", steam.PreviousChangeNumber.ToString());
 
                 steam.IsRunning = false;
@@ -114,8 +113,20 @@ namespace SteamWebPipes
                 }
 
                 server.Dispose();
+            }
+
+            Console.CancelKeyPress += delegate
+            {
+                Console.WriteLine("Ctrl + C detected, shutting down.");
+
+                Exit();
 
                 Environment.Exit(0);
+            };
+
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+            {
+                Exit();
             };
 
             steam.Tick();
