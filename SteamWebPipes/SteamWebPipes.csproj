@@ -9,9 +9,9 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.0.35" />
-    <PackageReference Include="Fleck" Version="1.1.0" />
-    <PackageReference Include="MySqlConnector" Version="1.0.1" />
+    <PackageReference Include="Dapper" Version="2.0.90" />
+    <PackageReference Include="Fleck" Version="1.2.0" />
+    <PackageReference Include="MySqlConnector" Version="1.3.14" />
     <PackageReference Include="SteamKit2" Version="2.3.0" />
   </ItemGroup>
   <ItemGroup>
