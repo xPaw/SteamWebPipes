@@ -1,0 +1,26 @@
+*,
+*:before,
+*:after {
+	box-sizing: inherit;
+}
+
+body {
+	font: 14px/20px ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+	margin: 20px;
+}
+
+.users {
+	margin-bottom: 20px;
+}
+
+.realtime .line {
+	margin-bottom: 6px;
+}
+
+.realtime .time {
+	display: inline-block;
+	text-align: center;
+	width: 75px;
+	margin-right: 10px;
+	font-variant-numeric: tabular-nums;
+}
